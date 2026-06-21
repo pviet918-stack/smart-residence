@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<title>Smart Residence OS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:linear-gradient(180deg,#1a237e,#283593);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.15)}
+.sidebar-header h2{font-size:1.05rem;font-weight:700}
+.sidebar-header p{font-size:.75rem;opacity:.7;margin-top:4px}
+.user-info{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+.user-name{font-size:.85rem;font-weight:600;word-break:break-word}
+.user-role{font-size:.7rem;opacity:.7;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px}
+nav{flex:1;padding:12px 0;overflow-y:auto}
+nav button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 20px;background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:.85rem;transition:.2s;text-align:left}
+nav button:hover,nav button.active{background:rgba(255,255,255,.15);color:#fff}
+nav button i{width:16px;text-align:center}
+.main{flex:1;overflow-y:auto;background:#f0f4f8}
+.topbar{background:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+.topbar h1{font-size:1.1rem;font-weight:700;color:#1a237e}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:.82rem;color:#666}
+.clock{font-weight:600;color:#333}
+.content{padding:24px 28px}
+.section{display:none}.section.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:22px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:1.15rem}
+.card-val{font-size:1.8rem;font-weight:700;color:#1a237e}
+.card-lbl{font-size:.78rem;color:#888;margin-top:2px}
+.panel{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:.95rem;font-weight:700;color:#1a237e;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:.78rem;font-weight:600;color:#555}
+.form-group label span{color:#e53935}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.87rem;outline:none;transition:.2s}
+.form-group input:focus,.form-group select:focus{border-color:#3f51b5}
+.btn{padding:9px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.87rem;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:linear-gradient(135deg,#3f51b5,#1a237e);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-danger{background:#e53935;color:#fff}
+.btn-warn{background:#ff9800;color:#fff}
+.btn-success{background:#43a047;color:#fff}
+.btn-sm{padding:5px 12px;font-size:.76rem}
+badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.72rem;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-gray{background:#f5f5f5;color:#777}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-purple{background:#ede7f6;color:#6a1b9a}
+table{width:100%;border-collapse:collapse}
+th{font-weight:700;color:#555;background:#fafafa;padding:9px 11px;text-align:left;font-size:.8rem;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:9px 11px;font-size:.8rem;border-bottom:1px solid #f0f0f0;word-break:break-word;max-width:150px}
+tr:hover td{background:#f5f7ff}
+.scan-area{border:2px dashed #bbb;border-radius:12px;padding:18px;text-align:center;min-height:270px;overflow:hidden}
+#reader__dashboard_section_csr>span,#reader__last_scan_result,#reader__status_span{display:none!important}
+#scanner-result{margin-top:14px;padding:14px;border-radius:10px;display:none}
+.res-ok{background:#e8f5e9;border-left:4px solid #4caf50}
+.res-fail{background:#ffebee;border-left:4px solid #e53935}
+.res-warn{background:#fff8e1;border-left:4px solid #ff9800}
+.res-title{font-weight:700;font-size:.95rem;margin-bottom:7px}
+.res-row{font-size:.82rem;color:#444;margin:4px 0;word-break:break-word}
+.res-row b{color:#1a237e}
+.pin-input-area{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pin-input-area input{padding:9px;border:2px solid #3f51b5;border-radius:8px;font-size:1.1rem;font-weight:700;letter-spacing:5px;width:110px;text-align:center;outline:none}
+.security-info{background:#e8eaf6;border-radius:8px;padding:10px 14px;font-size:.78rem;color:#3949ab;margin-bottom:14px;line-height:1.6}
+.pin-display{display:inline-block;background:#fff3e0;border:2px dashed #ff9800;border-radius:8px;padding:5px 14px;font-size:1.2rem;font-weight:800;letter-spacing:6px;color:#e65100;margin-top:5px}
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a237e,#3f51b5)}
+.login-card{background:#fff;border-radius:16px;padding:36px 32px;width:370px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo i{font-size:2.2rem;color:#1a237e}
+.login-logo h2{font-size:1.2rem;font-weight:800;color:#1a237e;margin-top:8px}
+.login-logo p{font-size:.78rem;color:#888;margin-top:4px}
+.login-card .form-group{margin-bottom:12px}
+.login-card input,.login-card select{width:100%;padding:10px 13px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.9rem;outline:none}
+.login-card input:focus{border-color:#3f51b5}
+.login-btn{width:100%;padding:11px;background:linear-gradient(135deg,#3f51b5,#1a237e);color:#fff;border:none;border-radius:8px;font-size:.92rem;font-weight:700;cursor:pointer;margin-top:5px;display:flex;align-items:center;justify-content:center;gap:7px}
+.login-btn:hover{opacity:.9}
+.login-btn.secondary{background:#f0f4f8;color:#1a237e}
+.login-err{color:#e53935;font-size:.8rem;text-align:center;margin-top:6px;display:none}
+.demo-box{margin-top:16px;padding:11px;background:#f5f7ff;border-radius:8px;font-size:.74rem;color:#666;line-height:1.9}
+.demo-box strong{color:#1a237e}
+.btn-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.notif-badge{background:#e53935;color:#fff;border-radius:50%;width:18px;height:18px;font-size:.62rem;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.empty-state{text-align:center;padding:36px;color:#ccc}
+.empty-state i{font-size:2.2rem;margin-bottom:8px}
+/* TOAST */
+.toast{position:fixed;top:18px;right:18px;background:#1a237e;color:#fff;padding:13px 18px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:9999;max-width:320px;animation:slideIn .3s ease;cursor:pointer;border-left:4px solid #7986cb}
+.toast-title{font-weight:700;font-size:.87rem;margin-bottom:3px}
+.toast-body{font-size:.78rem;opacity:.9;line-height:1.4}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(120%)}}
+.revoked-row td{opacity:.45;text-decoration:line-through}
+.locked-row td{opacity:.5;background:#fafafa!important}
+code.uname{background:#f0f4f8;padding:1px 6px;border-radius:4px;font-size:.76rem}
+@media(max-width:700px){.sidebar{display:none}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ===== ĐĂNG NHẬP ===== -->
+<div id="login-view" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo"><i class="fas fa-building"></i><h2>Smart Residence OS</h2><p>Hệ thống quản lý chung cư thông minh</p></div>
+    <div class="form-group"><label>Tên đăng nhập</label><input id="l-user" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-group"><label>Mật khẩu</label><input id="l-pass" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
+    <div id="login-err" class="login-err">❌ Sai tên đăng nhập hoặc mật khẩu (hoặc tài khoản bị khoá)</div>
+    <div class="btn-pair">
+      <button class="login-btn secondary" onclick="showView('register')"><i class="fas fa-user-plus"></i> Đăng ký cư dân</button>
+      <button class="login-btn secondary" onclick="showView('forgot')"><i class="fas fa-key"></i> Quên mật khẩu</button>
+    </div>
+    <div class="demo-box">
+      <strong>Tài khoản demo:</strong><br>
+      📋 Quản lý: <b>manager</b> / 123456<br>
+      👮 Bảo vệ: <b>guard1</b> / 123456<br>
+      🏠 Cư dân A101: <b>user1</b> / 123456
+    </div>
+  </div>
+</div>
+
+<!-- ===== ĐĂNG KÝ CƯ DÂN ===== -->
+<div id="register-view" class="login-wrap" style="display:none">
+  <div class="login-card" style="width:430px">
+    <div class="login-logo"><i class="fas fa-user-plus"></i><h2>Đăng ký cư dân</h2><p>Tự đăng ký tài khoản cư dân</p></div>
+    <div class="grid2">
+      <div class="form-group" style="grid-column:span 2"><label>Họ và tên <span>*</span></label><input id="r-name" placeholder="Nguyễn Văn A"></div>
+      <div class="form-group"><label>Tên đăng nhập <span>*</span></label><input id="r-user" placeholder="vd: nguyenvana"></div>
+      <div class="form-group"><label>Số điện thoại <span>*</span></label><input id="r-phone" type="tel" placeholder="0901234567"></div>
+      <div class="form-group"><label>Mật khẩu <span>*</span></label><input id="r-pass" type="password" placeholder="≥ 6 ký tự"></div>
+      <div class="form-group"><label>Xác nhận mật khẩu <span>*</span></label><input id="r-pass2" type="password" placeholder="Nhập lại"></div>
+      <div class="form-group"><label>Mã căn hộ <span>*</span></label><input id="r-apt" placeholder="VD: A101, B203"></div>
+      <div class="form-group"><label>Câu hỏi bảo mật <span>*</span></label>
+        <select id="r-q"><option value="pet">Tên thú cưng đầu tiên?</option><option value="school">Trường tiểu học của bạn?</option><option value="mother">Họ tên mẹ bạn?</option></select>
+      </div>
+      <div class="form-group" style="grid-column:span 2"><label>Câu trả lời <span>*</span></label><input id="r-a" placeholder="Dùng để khôi phục mật khẩu"></div>
+    </div>
+    <div id="r-err" style="color:#e53935;font-size:.8rem;margin:6px 0;display:none"></div>
+    <div id="r-ok" style="color:#2e7d32;font-size:.8rem;margin:6px 0;display:none"></div>
+    <button class="login-btn" style="margin-top:8px" onclick="doRegister()"><i class="fas fa-user-plus"></i> Đăng ký</button>
+    <button class="login-btn secondary" style="margin-top:7px" onclick="showView('login')"><i class="fas fa-arrow-left"></i> Quay lại</button>
+  </div>
+</div>
+
+<!-- ===== QUÊN MẬT KHẨU ===== -->
+<div id="forgot-view" class="login-wrap" style="display:none">
+  <div class="login-card">
+    <div class="login-logo"><i class="fas fa-key"></i><h2>Khôi phục mật khẩu</h2><p>Xác minh danh tính 3 bước</p></div>
+    <div id="forgot-s1">
+      <div class="form-group" style="margin-bottom:10px"><label>Tên đăng nhập</label><input id="f-user" placeholder="username"></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Số điện thoại đăng ký</label><input id="f-phone" type="tel" placeholder="0901234567"></div>
+      <div id="f-err" style="color:#e53935;font-size:.8rem;margin:6px 0;display:none"></div>
+      <button class="login-btn" onclick="fStep1()"><i class="fas fa-search"></i> Xác minh</button>
+    </div>
+    <div id="forgot-s2" style="display:none">
+      <div id="f-qlabel" style="background:#e8eaf6;padding:10px;border-radius:8px;font-size:.84rem;color:#1a237e;margin-bottom:10px;font-weight:600"></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Câu trả lời</label><input id="f-ans" placeholder="Nhập câu trả lời"></div>
+      <div id="f-err2" style="color:#e53935;font-size:.8rem;margin:6px 0;display:none"></div>
+      <button class="login-btn" onclick="fStep2()"><i class="fas fa-check"></i> Xác nhận</button>
+    </div>
+    <div id="forgot-s3" style="display:none">
+      <div style="color:#2e7d32;text-align:center;font-size:.84rem;margin-bottom:10px">✅ Xác minh thành công!</div>
+      <div class="form-group" style="margin-bottom:10px"><label>Mật khẩu mới</label><input id="f-np" type="password" placeholder="≥ 6 ký tự"></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Xác nhận mật khẩu mới</label><input id="f-np2" type="password" placeholder="Nhập lại"></div>
+      <div id="f-err3" style="color:#e53935;font-size:.8rem;margin:6px 0;display:none"></div>
+      <button class="login-btn" onclick="fStep3()"><i class="fas fa-save"></i> Đặt mật khẩu mới</button>
+    </div>
+    <button class="login-btn secondary" style="margin-top:8px" onclick="showView('login')"><i class="fas fa-arrow-left"></i> Quay lại</button>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app-view" class="app" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-header"><h2><i class="fas fa-building"></i> Smart Residence OS</h2><p>Hệ thống quản lý thông minh</p></div>
+    <div class="user-info">
+      <div class="user-avatar" id="nav-avatar">U</div>
+      <div><div class="user-name" id="nav-name">User</div><div class="user-role" id="nav-role">Cư dân</div></div>
+    </div>
+    <nav id="nav-menu"></nav>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <h1 id="page-title">Tổng quan</h1>
+      <div class="topbar-right">
+        <span class="clock" id="clock"></span>
+        <button class="btn btn-danger btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="sec-dashboard" class="section">
+        <div class="cards" id="stat-cards"></div>
+        <div class="panel"><h3><i class="fas fa-chart-bar"></i> Lượt khách 7 ngày gần đây</h3><canvas id="visit-chart" height="90"></canvas></div>
+        <div class="panel"><h3><i class="fas fa-clock"></i> QR gần đây</h3><div id="recent-qr-list"></div></div>
+      </div>
+
+      <!-- TẠO QR -->
+      <div id="sec-qr" class="section">
+        <div class="panel">
+          <h3><i class="fas fa-qrcode"></i> Tạo mã QR khách thăm</h3>
+          <div class="security-info"><i class="fas fa-shield-alt"></i> <strong>Bảo mật đa lớp:</strong> QR gắn ID ẩn — không thể làm giả. Thêm mã PIN để khách xác minh miệng trước bảo vệ — dù QR bị lộ cũng không vào được.</div>
+          <div class="grid2">
+            <div class="form-group"><label>Tên khách <span>*</span></label><input id="q-name" placeholder="Nguyễn Văn A" maxlength="30"></div>
+            <div class="form-group"><label>Căn hộ</label><input id="q-apt" readonly></div>
+            <div class="form-group"><label>Thời gian hết hạn <span>*</span></label><input id="q-expire" type="datetime-local"></div>
+            <div class="form-group"><label>Ghi chú</label><input id="q-note" placeholder="Thăm nhà, giao hàng..." maxlength="30"></div>
+            <div class="form-group"><label>Giới hạn lượt dùng</label>
+              <select id="q-maxuses">
+                <option value="1">🔒 1 lần duy nhất (khuyến nghị)</option>
+                <option value="3">3 lần</option>
+                <option value="0">Không giới hạn</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Mã PIN xác minh <span style="color:#ff9800">⚠ khuyến nghị</span></label><input id="q-pin" placeholder="VD: 4829" maxlength="6" inputmode="numeric"></div>
+          </div>
+          <button class="btn btn-primary" onclick="createQR()"><i class="fas fa-qrcode"></i> Tạo mã QR</button>
+          <div id="qr-output" style="text-align:center;margin-top:18px;display:none">
+            <div style="display:inline-block;padding:16px;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)">
+              <div id="qr-canvas"></div>
+              <div id="qr-meta" style="margin-top:10px;font-size:.8rem;color:#555;line-height:1.7"></div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="printQR()"><i class="fas fa-print"></i> In</button>
+              <button class="btn btn-sm" style="background:#f5f5f5" onclick="downloadQR()"><i class="fas fa-download"></i> Tải xuống</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel"><h3><i class="fas fa-history"></i> Lịch sử QR đã tạo</h3><div id="qr-history-list"></div></div>
+      </div>
+
+      <!-- QUÉT QR -->
+      <div id="sec-scan" class="section">
+        <div class="panel">
+          <h3><i class="fas fa-camera"></i> Quét mã QR tại cổng</h3>
+          <div class="scan-area"><div id="reader"></div></div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-primary" id="btn-start-scan" onclick="startScan()"><i class="fas fa-play"></i> Bắt đầu quét</button>
+            <button class="btn btn-sm" style="background:#f5f5f5" id="btn-stop-scan" onclick="stopScan()" disabled><i class="fas fa-stop"></i> Dừng</button>
+          </div>
+          <div id="scanner-result"></div>
+        </div>
+        <div class="panel"><h3><i class="fas fa-list"></i> Lịch sử lượt vào</h3><div id="access-log-list"></div></div>
+      </div>
+
+      <!-- CƯ DÂN -->
+      <div id="sec-residents" class="section">
+        <div class="panel">
+          <h3><i class="fas fa-users"></i> Danh sách cư dân</h3>
+          <table><thead><tr><th>Họ tên</th><th>Căn hộ</th><th>SĐT</th><th>Trạng thái</th></tr></thead><tbody id="resident-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- QUẢN LÝ TÀI KHOẢN -->
+      <div id="sec-accounts" class="section">
+        <div class="panel">
+          <h3><i class="fas fa-user-plus"></i> Tạo tài khoản mới</h3>
+          <div class="security-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Phân quyền thực tế:</strong>
+            Cư dân tự đăng ký qua trang chủ. Tài khoản <b>Bảo vệ</b> và <b>Quản lý</b> chỉ được tạo bởi quản lý — đảm bảo kiểm soát nhân sự.
+          </div>
+          <div class="grid2">
+            <div class="form-group"><label>Họ và tên <span>*</span></label><input id="ac-name" placeholder="Nguyễn Văn A"></div>
+            <div class="form-group"><label>Tên đăng nhập <span>*</span></label><input id="ac-user" placeholder="vd: bv_nguyen"></div>
+            <div class="form-group"><label>Mật khẩu <span>*</span></label><input id="ac-pass" type="password" placeholder="≥ 6 ký tự"></div>
+            <div class="form-group"><label>Số điện thoại <span>*</span></label><input id="ac-phone" type="tel" placeholder="0901234567"></div>
+            <div class="form-group">
+              <label>Vai trò <span>*</span></label>
+              <select id="ac-role" onchange="toggleAptField()">
+                <option value="guard">👮 Bảo vệ</option>
+                <option value="manager">📋 Quản lý</option>
+                <option value="resident">🏠 Cư dân</option>
+              </select>
+            </div>
+            <div class="form-group" id="ac-apt-group"><label>Căn hộ (nếu là cư dân)</label><input id="ac-apt" placeholder="VD: A101" disabled></div>
+          </div>
+          <div id="ac-err" style="color:#e53935;font-size:.8rem;margin:6px 0;display:none"></div>
+          <div id="ac-ok" style="color:#2e7d32;font-size:.8rem;margin:6px 0;display:none"></div>
+          <button class="btn btn-primary" onclick="createAccount()"><i class="fas fa-plus"></i> Tạo tài khoản</button>
+        </div>
+        <div class="panel">
+          <h3><i class="fas fa-list"></i> Tất cả tài khoản hệ thống</h3>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <button class="btn btn-sm" style="background:#e8eaf6;color:#1a237e" onclick="filterAccounts('all')">Tất cả</button>
+            <button class="btn btn-sm" style="background:#fff3e0;color:#e65100" onclick="filterAccounts('guard')">👮 Bảo vệ</button>
+            <button class="btn btn-sm" style="background:#e3f2fd;color:#1565c0" onclick="filterAccounts('manager')">📋 Quản lý</button>
+            <button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32" onclick="filterAccounts('resident')">🏠 Cư dân</button>
+          </div>
+          <div id="account-list"></div>
+        </div>
+      </div>
+
+      <!-- THÔNG BÁO -->
+      <div id="sec-notif" class="section">
+        <div class="panel"><h3><i class="fas fa-bell"></i> Thông báo</h3><div id="notif-list"></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const DB_KEY='sros_v7', SES_KEY='sros_ses';
+let DB, currentUser=null;
+function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+
+function loadDB(){
+  const raw=localStorage.getItem(DB_KEY);
+  if(raw){try{DB=JSON.parse(raw);return;}catch(e){}}
+  const now=Date.now();
+  DB={
+    users:[
+      {id:'u1', username:'guard1',  password:'123456',name:'Nguyễn Bảo Vệ',      role:'guard',   apt:'',    phone:'0901000001',active:true},
+      {id:'u2', username:'guard2',  password:'123456',name:'Lê Văn Tuấn',         role:'guard',   apt:'',    phone:'0901000002',active:true},
+      {id:'u3', username:'guard3',  password:'123456',name:'Trần Đức Hùng',       role:'guard',   apt:'',    phone:'0901000003',active:true},
+      {id:'u4', username:'manager', password:'123456',name:'Phạm Quản Lý',        role:'manager', apt:'',    phone:'0904000015',active:true,secQ:'mother',secA:'nguyen thi lan'},
+      {id:'u5', username:'manager2',password:'123456',name:'Vũ Thị Hoa Quản Lý', role:'manager', apt:'',    phone:'0904000016',active:true},
+      {id:'u6', username:'user1',   password:'123456',name:'Trần Văn Minh',       role:'resident',apt:'A101',phone:'0902000006',active:true,secQ:'pet',secA:'milu'},
+      {id:'u7', username:'user2',   password:'123456',name:'Lê Thị Hoa',          role:'resident',apt:'A102',phone:'0903000007',active:true,secQ:'school',secA:'nguyen du'},
+      {id:'u8', username:'user3',   password:'123456',name:'Phạm Thành Đạt',      role:'resident',apt:'A201',phone:'0905000008',active:true},
+      {id:'u9', username:'user4',   password:'123456',name:'Nguyễn Thị Lan',      role:'resident',apt:'A202',phone:'0906000009',active:true},
+      {id:'u10',username:'user5',   password:'123456',name:'Hoàng Minh Khôi',     role:'resident',apt:'B101',phone:'0907000010',active:true},
+      {id:'u11',username:'user6',   password:'123456',name:'Võ Thị Mỹ Linh',     role:'resident',apt:'B102',phone:'0908000011',active:true},
+      {id:'u12',username:'user7',   password:'123456',name:'Bùi Hoàng Gia Hưng',  role:'resident',apt:'B201',phone:'0909000012',active:true},
+      {id:'u13',username:'user8',   password:'123456',name:'Trương Văn Nam',      role:'resident',apt:'B202',phone:'0910000013',active:true},
+      {id:'u14',username:'user9',   password:'123456',name:'Lý Thị Kim Anh',      role:'resident',apt:'B203',phone:'0911000014',active:true},
+      {id:'u15',username:'user10',  password:'123456',name:'Mai Xuân Long',       role:'resident',apt:'C101',phone:'0912000015',active:true},
+      {id:'u16',username:'user11',  password:'123456',name:'Phan Thị Thu Hương',  role:'resident',apt:'C102',phone:'0913000016',active:true},
+      {id:'u17',username:'user12',  password:'123456',name:'Tạ Văn Khánh',        role:'resident',apt:'C201',phone:'0914000017',active:true}
+    ],
+    qrList:[
+      {id:'qp1',qid:uid(),guestName:'Nguyen Van An',        apt:'A101',expire:Date.now()+864e5*2, note:'Tham nha',    pin:'1234',maxUses:1,usedCount:0,revoked:false,owner:'Trần Văn Minh', createdAt:Date.now()-36e5*5},
+      {id:'qp2',qid:uid(),guestName:'Tran Thi Bich Phuong', apt:'A102',expire:Date.now()+864e5*1, note:'Giao hang',   pin:'',   maxUses:3,usedCount:1,revoked:false,owner:'Lê Thị Hoa',   createdAt:Date.now()-36e5*8},
+      {id:'qp3',qid:uid(),guestName:'Le Van Cuong',         apt:'B101',expire:Date.now()-864e5,   note:'Sua may lanh',pin:'5678',maxUses:1,usedCount:1,revoked:false,owner:'Hoàng Minh Khôi',createdAt:Date.now()-864e5*2},
+      {id:'qp4',qid:uid(),guestName:'Bui Hoang Gia Hung',   apt:'B201',expire:Date.now()+864e5*3, note:'Ho hang xom', pin:'9999',maxUses:0,usedCount:2,revoked:false,owner:'Bùi Hoàng Gia Hưng',createdAt:Date.now()-36e5*2},
+      {id:'qp5',qid:uid(),guestName:'Hoang Van Em',         apt:'B202',expire:Date.now()+864e5,   note:'',            pin:'',   maxUses:1,usedCount:0,revoked:true, owner:'Trương Văn Nam', createdAt:Date.now()-864e5},
+      {id:'qp6',qid:uid(),guestName:'Vo Thi Phuong Anh',    apt:'C101',expire:Date.now()+864e5*5, note:'Giao do an',  pin:'2468',maxUses:1,usedCount:0,revoked:false,owner:'Mai Xuân Long',  createdAt:Date.now()-36e5}
+    ],
+    accessLog:[
+      {id:'al1',guestName:'Nguyen Van An',       apt:'A101',note:'Tham nha',   time:Date.now()-36e5,  status:'granted',guardName:'Nguyễn Bảo Vệ',pinVerified:true},
+      {id:'al2',guestName:'Tran Thi Bich Phuong',apt:'A102',note:'Giao hang',  time:Date.now()-36e5*3,status:'granted',guardName:'Lê Văn Tuấn',   pinVerified:false},
+      {id:'al3',guestName:'Le Van Cuong',        apt:'B101',note:'Sua may lanh',time:Date.now()-864e5, status:'denied', guardName:'Nguyễn Bảo Vệ',reason:'Hết hạn'},
+      {id:'al4',guestName:'Bui Hoang Gia Hung',  apt:'B201',note:'Ho hang xom',time:Date.now()-36e5*5,status:'granted',guardName:'Lê Văn Tuấn',   pinVerified:true},
+      {id:'al5',guestName:'Hoang Van Em',        apt:'B202',note:'',           time:Date.now()-36e5*2,status:'denied', guardName:'Nguyễn Bảo Vệ',reason:'QR đã thu hồi'},
+      {id:'al6',guestName:'Vo Thi Phuong Anh',   apt:'C101',note:'Giao do an', time:Date.now()-18e5,  status:'granted',guardName:'Trần Đức Hùng', pinVerified:true}
+    ],
+    notifications:{
+      global:[
+        {id:'ng1',title:'Bảo trì thang máy',      body:'Thang máy tòa A bảo trì ngày 25/6/2026.',time:'2026-06-18',read:false},
+        {id:'ng2',title:'Đóng phí dịch vụ tháng 6',body:'Hạn đóng phí 30/6/2026.',time:'2026-06-15',read:false},
+        {id:'ng3',title:'Lịch sinh hoạt cộng đồng',body:'Ngày 28/6 dọn vệ sinh khuôn viên.',time:'2026-06-12',read:true},
+        {id:'ng4',title:'Cập nhật quy định gửi xe', body:'Từ 1/7/2026 áp dụng quy định mới.',time:'2026-06-10',read:true}
+      ],
+      personal:{}
+    }
+  };
+  saveDB();
+}
+function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+
+// ─── AUTH ────────────────────────────────────────────────
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const user=DB.users.find(x=>x.username===u&&x.password===p);
+  const err=document.getElementById('login-err');
+  if(!user){err.style.display='block';return;}
+  if(user.active===false){err.textContent='⛔ Tài khoản đã bị khoá. Liên hệ quản lý.';err.style.display='block';return;}
+  loginUser(user);
+}
+function loginUser(user){
+  currentUser=user;
+  localStorage.setItem(SES_KEY,user.username);
+  document.getElementById('login-err').style.display='none';
+  document.getElementById('login-err').textContent='❌ Sai tên đăng nhập hoặc mật khẩu (hoặc tài khoản bị khoá)';
+  ['login-view','register-view','forgot-view'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('app-view').style.display='flex';
+  initApp();
+  setTimeout(showNewNotifToast,900);
+}
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem(SES_KEY);
+  document.getElementById('app-view').style.display='none';
+  showView('login');
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  if(qrScanner){try{qrScanner.stop();}catch(e){}qrScanner=null;}
+}
+function restoreSession(){
+  const u=localStorage.getItem(SES_KEY);
+  if(!u)return;
+  const user=DB.users.find(x=>x.username===u);
+  if(user&&user.active!==false)loginUser(user);
+}
+
+// ─── VIEW SWITCHER ────────────────────────────────────────
+function showView(v){
+  const views=['login-view','register-view','forgot-view'];
+  views.forEach(id=>document.getElementById(id).style.display='none');
+  if(v==='login'){
+    document.getElementById('login-view').style.display='flex';
+  } else if(v==='register'){
+    document.getElementById('register-view').style.display='flex';
+    document.getElementById('r-err').style.display='none';
+    document.getElementById('r-ok').style.display='none';
+  } else if(v==='forgot'){
+    document.getElementById('forgot-view').style.display='flex';
+    resetForgot();
+  }
+}
+
+// ─── ĐĂNG KÝ CƯ DÂN ─────────────────────────────────────
+function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const username=document.getElementById('r-user').value.trim().toLowerCase();
+  const phone=document.getElementById('r-phone').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const pass2=document.getElementById('r-pass2').value;
+  const apt=document.getElementById('r-apt').value.trim().toUpperCase();
+  const secQ=document.getElementById('r-q').value;
+  const secA=document.getElementById('r-a').value.trim().toLowerCase();
+  const e=document.getElementById('r-err'),ok=document.getElementById('r-ok');
+  e.style.display='none';ok.style.display='none';
+  if(!name||!username||!phone||!pass||!apt||!secA){e.textContent='❌ Vui lòng điền đầy đ�� thông tin.';e.style.display='block';return;}
+  if(pass.length<6){e.textContent='❌ Mật khẩu phải ≥ 6 ký tự.';e.style.display='block';return;}
+  if(pass!==pass2){e.textContent='❌ Mật khẩu xác nhận không khớp.';e.style.display='block';return;}
+  if(DB.users.find(u=>u.username===username)){e.textContent='❌ Tên đăng nhập đã tồn tại.';e.style.display='block';return;}
+  if(!/^[A-Z]\d{3}$/.test(apt)){e.textContent='❌ Mã căn hộ không hợp lệ (VD: A101, B203).';e.style.display='block';return;}
+  if(DB.users.find(u=>u.apt===apt&&u.role==='resident')){e.textContent=`❌ Căn hộ ${apt} đã có người đăng ký. Liên hệ quản lý.`;e.style.display='block';return;}
+  DB.users.push({id:'u'+Date.now(),username,password:pass,name,role:'resident',apt,phone,active:true,secQ,secA});
+  saveDB();
+  ok.textContent='✅ Đăng ký thành công! Chuyển về trang đăng nhập...';
+  ok.style.display='block';
+  setTimeout(()=>{showView('login');document.getElementById('l-user').value=username;},1800);
+}
+
+// ─── QUÊN MẬT KHẨU ───────────────────────────────────────
+let fUser=null;
+function resetForgot(){
+  fUser=null;
+  document.getElementById('forgot-s1').style.display='block';
+  document.getElementById('forgot-s2').style.display='none';
+  document.getElementById('forgot-s3').style.display='none';
+  ['f-user','f-phone','f-ans','f-np','f-np2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-err','f-err2','f-err3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+}
+function fStep1(){
+  const u=document.getElementById('f-user').value.trim();
+  const p=document.getElementById('f-phone').value.trim();
+  const err=document.getElementById('f-err');err.style.display='none';
+  const user=DB.users.find(x=>x.username===u&&x.phone===p);
+  if(!user||!user.secQ){err.textContent='❌ Không tìm thấy tài khoản khớp thông tin trên.';err.style.display='block';return;}
+  fUser=user;
+  const ql={pet:'Tên thú cưng đầu tiên?',school:'Trường tiểu học của bạn?',mother:'Họ tên mẹ bạn?'};
+  document.getElementById('f-qlabel').textContent='🔒 '+(ql[user.secQ]||'Câu hỏi bảo mật');
+  document.getElementById('forgot-s1').style.display='none';
+  document.getElementById('forgot-s2').style.display='block';
+}
+function fStep2(){
+  const ans=document.getElementById('f-ans').value.trim().toLowerCase();
+  const err=document.getElementById('f-err2');err.style.display='none';
+  if(!fUser||ans!==fUser.secA){err.textContent='❌ Câu trả lời không đúng.';err.style.display='block';return;}
+  document.getElementById('forgot-s2').style.display='none';
+  document.getElementById('forgot-s3').style.display='block';
+}
+function fStep3(){
+  const p1=document.getElementById('f-np').value;
+  const p2=document.getElementById('f-np2').value;
+  const err=document.getElementById('f-err3');err.style.display='none';
+  if(p1.length<6){err.textContent='❌ Mật khẩu phải ≥ 6 ký tự.';err.style.display='block';return;}
+  if(p1!==p2){err.textContent='❌ Mật khẩu xác nhận không khớp.';err.style.display='block';return;}
+  fUser.password=p1;saveDB();
+  alert('✅ Đặt mật khẩu mới thành công!');
+  showView('login');
+  document.getElementById('l-user').value=fUser.username;
+  fUser=null;
+}
+
+// ─── INIT APP ─────────────────────────────────────────────
+let chartInst=null;
+function initApp(){
+  const r=currentUser.role;
+  document.getElementById('nav-avatar').textContent=currentUser.name[0];
+  document.getElementById('nav-name').textContent=currentUser.name;
+  document.getElementById('nav-role').textContent={guard:'Bảo vệ',resident:'Cư dân',manager:'Quản lý'}[r];
+  const menus=[];
+  if(r==='manager'||r==='guard') menus.push({id:'dashboard',icon:'fa-chart-pie',label:'Tổng quan'});
+  if(r==='resident'||r==='manager') menus.push({id:'qr',icon:'fa-qrcode',label:'Tạo QR'});
+  if(r==='guard'||r==='manager') menus.push({id:'scan',icon:'fa-camera',label:'Quét QR'});
+  if(r==='manager') menus.push({id:'residents',icon:'fa-users',label:'Cư dân'});
+  if(r==='manager') menus.push({id:'accounts',icon:'fa-id-badge',label:'Quản lý TK'});
+  menus.push({id:'notif',icon:'fa-bell',label:'Thông báo'});
+  document.getElementById('nav-menu').innerHTML=menus.map(m=>`
+    <button onclick="showSection('${m.id}')" id="nav-${m.id}">
+      <i class="fas ${m.icon}"></i> ${m.label}
+      ${m.id==='notif'?'<span class="notif-badge" id="notif-cnt" style="display:none">0</span>':''}
+    </button>`).join('');
+  if(r==='resident'){const inp=document.getElementById('q-apt');if(inp)inp.value=currentUser.apt;}
+  showSection(menus[0].id);
+  updateNotifBadge();
+  startClock();
+}
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id)?.classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
+  const titles={dashboard:'Tổng quan',qr:'Tạo QR khách thăm',scan:'Quét QR tại cổng',residents:'Danh sách cư dân',accounts:'Quản lý tài khoản',notif:'Thông báo'};
+  document.getElementById('page-title').textContent=titles[id]||'';
+  if(id==='dashboard')renderDashboard();
+  if(id==='qr')renderQRHistory();
+  if(id==='scan')renderAccessLog();
+  if(id==='residents')renderResidents();
+  if(id==='accounts'){renderAccountList('all');}
+  if(id==='notif')renderNotifications();
+  if(id!=='scan'&&qrScanner){try{qrScanner.stop();}catch(e){}qrScanner=null;
+    document.getElementById('btn-start-scan').disabled=false;
+    document.getElementById('btn-stop-scan').disabled=true;}
+}
+function startClock(){const el=document.getElementById('clock');function t(){el.textContent=new Date().toLocaleString('vi-VN');}t();setInterval(t,1000);}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+function qrStatus(q,now){
+  if(q.revoked)return{cls:'badge-gray',label:'❌ Thu hồi'};
+  if(q.expire<=now)return{cls:'badge-red',label:'Hết hạn'};
+  if(q.maxUses>0&&q.usedCount>=q.maxUses)return{cls:'badge-orange',label:'Hết lượt'};
+  return{cls:'badge-green',label:'✅ Hiệu lực'};
+}
+function renderDashboard(){
+  const now=Date.now();
+  const active=DB.qrList.filter(q=>!q.revoked&&q.expire>now&&(q.maxUses===0||q.usedCount<q.maxUses)).length;
+  const today=new Date().toDateString();
+  const todayIn=DB.accessLog.filter(a=>new Date(a.time).toDateString()===today&&a.status==='granted').length;
+  document.getElementById('stat-cards').innerHTML=[
+    {icon:'fa-qrcode',    color:'#e3f2fd',val:DB.qrList.length,                                 lbl:'Tổng QR đã tạo'},
+    {icon:'fa-check-circle',color:'#e8f5e9',val:active,                                         lbl:'QR đang hiệu lực'},
+    {icon:'fa-door-open', color:'#fff3e0',val:todayIn,                                           lbl:'Lượt vào hôm nay'},
+    {icon:'fa-users',     color:'#fce4ec',val:DB.users.filter(u=>u.role==='resident').length,    lbl:'Cư dân'},
+    {icon:'fa-user-shield',color:'#ede7f6',val:DB.users.filter(u=>u.role==='guard'&&u.active!==false).length,lbl:'Bảo vệ'},
+    {icon:'fa-shield-alt',color:'#e8eaf6',val:DB.accessLog.filter(a=>a.pinVerified).length,     lbl:'Xác minh PIN'}
+  ].map(c=>`<div class="card"><div class="card-icon" style="background:${c.color}"><i class="fas ${c.icon}" style="color:#1a237e"></i></div><div class="card-val">${c.val}</div><div class="card-lbl">${c.lbl}</div></div>`).join('');
+  const labels=[],data=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}));const ds=d.toDateString();data.push(DB.accessLog.filter(a=>new Date(a.time).toDateString()===ds&&a.status==='granted').length);}
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(document.getElementById('visit-chart'),{type:'bar',data:{labels,datasets:[{label:'Lượt vào',data,backgroundColor:'rgba(63,81,181,.6)',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  const recent=[...DB.qrList].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  document.getElementById('recent-qr-list').innerHTML=recent.length
+    ?`<table><thead><tr><th>Khách</th><th>Căn hộ</th><th>Hết hạn</th><th>PIN</th><th>Trạng thái</th></tr></thead><tbody>${recent.map(q=>{const st=qrStatus(q,now);return`<tr class="${q.revoked?'revoked-row':''}"><td>${q.guestName}</td><td>${q.apt}</td><td>${new Date(q.expire).toLocaleString('vi-VN')}</td><td>${q.pin?'🔒 Có':'—'}</td><td><badge class="${st.cls}">${st.label}</badge></td></tr>`;}).join('')}</tbody></table>`
+    :'<div class="empty-state"><i class="fas fa-qrcode"></i><p>Chưa có QR</p></div>';
+}
+
+// ─── TẠO QR ──────────────────────────────────────────────
+function removeAccents(s){return(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,m=>m==='đ'?'d':'D').trim();}
+function createQR(){
+  const name=document.getElementById('q-name').value.trim();
+  const apt=currentUser.apt||document.getElementById('q-apt').value.trim();
+  const expStr=document.getElementById('q-expire').value;
+  const note=document.getElementById('q-note').value.trim();
+  const maxUses=parseInt(document.getElementById('q-maxuses').value);
+  const pin=document.getElementById('q-pin').value.trim();
+  if(!name){alert('Vui lòng nhập tên khách!');return;}
+  if(!expStr){alert('Vui lòng chọn thời gian hết hạn!');return;}
+  const expTs=Math.floor(new Date(expStr).getTime()/1000);
+  if(isNaN(expTs)||expTs<=Math.floor(Date.now()/1000)){alert('Thời gian hết hạn phải ở tương lai!');return;}
+  const qid=uid();
+  const payload=`SROS:v2:${qid}:${apt}:${expTs}:${removeAccents(name).slice(0,15)}`;
+  const qrDiv=document.getElementById('qr-canvas');qrDiv.innerHTML='';
+  try{new QRCode(qrDiv,{text:payload,width:200,height:200,correctLevel:QRCode.CorrectLevel.L});}catch(e){alert('Lỗi tạo QR: '+e.message);return;}
+  const rec={id:'q'+Date.now(),qid,guestName:name,apt,expire:expTs*1000,note,pin,maxUses,usedCount:0,revoked:false,owner:currentUser.name,createdAt:Date.now()};
+  DB.qrList.push(rec);saveDB();
+  const usesInfo=maxUses===0?'Không giới hạn':maxUses===1?'1 lần duy nhất':maxUses+' lần';
+  const pinInfo=pin?`<br>Nhắc khách nhớ PIN: <span class="pin-display">${pin}</span>`:'<br><span style="font-size:.73rem;color:#aaa">(Không có PIN)</span>';
+  document.getElementById('qr-meta').innerHTML=`<strong>${name}</strong> • Căn hộ <strong>${apt}</strong><br>Hết hạn: ${new Date(expTs*1000).toLocaleString('vi-VN')}<br>Giới hạn: ${usesInfo}${pinInfo}`;
+  document.getElementById('qr-output').style.display='block';
+  renderQRHistory();
+}
+function printQR(){window.print();}
+function downloadQR(){const c=document.querySelector('#qr-canvas canvas');if(!c){alert('Chưa có QR!');return;}const a=document.createElement('a');a.download='qr-khach.png';a.href=c.toDataURL('image/png');a.click();}
+function revokeQR(id){
+  if(!confirm('Thu hồi QR này? Khách sẽ không thể vào bằng mã này nữa.'))return;
+  const q=DB.qrList.find(x=>x.id===id);if(q){q.revoked=true;saveDB();renderQRHistory();showToast('❌ QR đã thu hồi','Khách sẽ bị từ chối khi bảo vệ quét.');}
+}
+function renderQRHistory(){
+  const mine=currentUser.role==='manager'?DB.qrList:DB.qrList.filter(q=>q.apt===currentUser.apt);
+  const sorted=[...mine].sort((a,b)=>b.createdAt-a.createdAt);const now=Date.now();
+  document.getElementById('qr-history-list').innerHTML=sorted.length
+    ?`<table><thead><tr><th>Khách</th><th>Căn hộ</th><th>Ghi chú</th><th>Hết hạn</th><th>Lượt</th><th>PIN</th><th>Trạng thái</th><th></th></tr></thead><tbody>${sorted.map(q=>{
+      const st=qrStatus(q,now);
+      return `<tr class="${q.revoked?'revoked-row':''}"><td>${q.guestName}</td><td>${q.apt}</td><td>${q.note||'—'}</td><td>${new Date(q.expire).toLocaleString('vi-VN')}</td><td>${q.maxUses===0?q.usedCount+'/∞':q.usedCount+'/'+q.maxUses}</td><td>${q.pin?`🔒 ${q.pin}`:'—'}</td><td><badge class="${st.cls}">${st.label}</badge></td><td>${!q.revoked&&q.expire>now?`<button class="btn btn-warn btn-sm" onclick="revokeQR('${q.id}')"><i class="fas fa-ban"></i> Thu hồi</button>`:''}</td></tr>`;
+    }).join('')}</tbody></table>`
+    :'<div class="empty-state"><i class="fas fa-history"></i><p>Chưa có QR</p></div>';
+  const ai=document.getElementById('q-apt');if(ai&&currentUser.apt)ai.value=currentUser.apt;
+  const ei=document.getElementById('q-expire');if(ei&&!ei.value){const d=new Date();d.setDate(d.getDate()+3);ei.value=d.toISOString().slice(0,16);}
+}
+
+// ─── QUÉT QR ─────────────────────────────────────────────
+let qrScanner=null, pendingQR=null;
+function startScan(){
+  document.getElementById('btn-start-scan').disabled=true;
+  document.getElementById('btn-stop-scan').disabled=false;
+  document.getElementById('scanner-result').style.display='none';
+  qrScanner=new Html5Qrcode('reader',{verbose:false});
+  qrScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},(text)=>{stopScan();processQR(text);},()=>{})
+  .catch(e=>{alert('Không thể mở camera: '+e);document.getElementById('btn-start-scan').disabled=false;document.getElementById('btn-stop-scan').disabled=true;});
+}
+function stopScan(){
+  if(qrScanner){try{qrScanner.stop();}catch(e){}qrScanner=null;}
+  document.getElementById('btn-start-scan').disabled=false;
+  document.getElementById('btn-stop-scan').disabled=true;
+}
+function processQR(text){
+  const rd=document.getElementById('scanner-result');pendingQR=null;
+  if(text.startsWith('SROS:v2:')){
+    const parts=text.split(':');
+    if(parts.length>=6){
+      const qid=parts[2];
+      const qr=DB.qrList.find(x=>x.qid===qid);
+      if(!qr){showFail(rd,'❌ QR không tồn tại trong hệ thống',parts[5]||'?',parts[3]||'?','QR không hợp lệ');logA(parts[5]||'?',parts[3]||'?','','denied','QR không hợp lệ',false);return;}
+      if(qr.revoked){showFail(rd,'❌ QR đã bị chủ nhà thu hồi',qr.guestName,qr.apt,'Thu hồi');logA(qr.guestName,qr.apt,qr.note,'denied','QR đã thu hồi',false);return;}
+      if(qr.expire<=Date.now()){showFail(rd,'❌ QR đã hết hạn',qr.guestName,qr.apt,'Hết hạn');logA(qr.guestName,qr.apt,qr.note,'denied','Hết hạn',false);return;}
+      if(qr.maxUses>0&&qr.usedCount>=qr.maxUses){showFail(rd,'❌ QR đã hết lượt sử dụng',qr.guestName,qr.apt,'Hết lượt');logA(qr.guestName,qr.apt,qr.note,'denied','Hết lượt',false);return;}
+      if(qr.pin){
+        pendingQR=qr;rd.style.display='block';rd.className='scanner-result res-warn';
+        rd.innerHTML=`<div class="res-title">🔒 Yêu cầu xác minh PIN</div>
+          <div class="res-row"><b>Khách:</b> ${qr.guestName}</div>
+          <div class="res-row"><b>Căn hộ:</b> ${qr.apt}</div>
+          <div class="res-row"><b>Ghi chú:</b> ${qr.note||'—'}</div>
+          <div class="res-row" style="margin-top:8px">Hỏi khách mã PIN và nhập vào đây:</div>
+          <div class="pin-input-area">
+            <input id="pin-entry" type="tel" maxlength="6" placeholder="••••" onkeydown="if(event.key==='Enter')confirmPIN()">
+            <button class="btn btn-primary btn-sm" onclick="confirmPIN()"><i class="fas fa-check"></i> Xác nhận</button>
+            <button class="btn btn-sm" style="background:#f5f5f5" onclick="denyEntry('Sai PIN / Từ chối')"><i class="fas fa-times"></i> Từ chối</button>
+          </div>`;
+        setTimeout(()=>document.getElementById('pin-entry')?.focus(),100);return;
+      }
+      grantEntry(qr,false);
+    }
+  } else {
+    rd.style.display='block';rd.className='scanner-result res-fail';
+    rd.innerHTML='<div class="res-title">❌ QR không hợp lệ</div><div class="res-row">Mã QR không thuộc hệ thống Smart Residence OS.</div>';
+  }
+}
+function confirmPIN(){
+  if(!pendingQR)return;
+  const entered=(document.getElementById('pin-entry').value||'').trim();
+  if(entered===pendingQR.pin){grantEntry(pendingQR,true);pendingQR=null;}
+  else{
+    const inp=document.getElementById('pin-entry');
+    if(inp){inp.style.borderColor='#e53935';inp.value='';inp.placeholder='Sai PIN, thử lại';}
+    showToast('❌ Sai mã PIN','Mã PIN không đúng.',2500);
+  }
+}
+function denyEntry(reason){
+  if(pendingQR){logA(pendingQR.guestName,pendingQR.apt,pendingQR.note,'denied',reason,false);pendingQR=null;}
+  const rd=document.getElementById('scanner-result');
+  rd.style.display='block';rd.className='scanner-result res-fail';
+  rd.innerHTML=`<div class="res-title">❌ Từ chối vào</div><div class="res-row">${reason}</div>`;
+  renderAccessLog();
+}
+function grantEntry(qr,pinVerified){
+  qr.usedCount++;const now=Date.now();
+  logA(qr.guestName,qr.apt,qr.note,'granted','',pinVerified);
+  notifyOwner(qr.apt,qr.guestName,qr.note,now,pinVerified);
+  const rd=document.getElementById('scanner-result');
+  rd.style.display='block';rd.className='scanner-result res-ok';
+  const rem=qr.maxUses>0?qr.maxUses-qr.usedCount:-1;
+  rd.innerHTML=`<div class="res-title">✅ Cho phép vào</div>
+    <div class="res-row"><b>Khách:</b> ${qr.guestName}</div>
+    <div class="res-row"><b>Căn hộ:</b> ${qr.apt}</div>
+    <div class="res-row"><b>Ghi chú:</b> ${qr.note||'—'}</div>
+    <div class="res-row"><b>PIN đã xác minh:</b> ${pinVerified?'✅ Có':'— Không yêu cầu'}</div>
+    <div class="res-row"><b>Lượt còn lại:</b> ${rem<0?'Không giới hạn':rem+' lần'}</div>
+    <div class="res-row"><b>Bảo vệ:</b> ${currentUser.name}</div>`;
+  renderAccessLog();
+}
+function showFail(rd,title,guestName,apt,reason){
+  rd.style.display='block';rd.className='scanner-result res-fail';
+  rd.innerHTML=`<div class="res-title">${title}</div><div class="res-row"><b>Khách:</b> ${guestName}</div><div class="res-row"><b>Căn hộ:</b> ${apt}</div>${reason?`<div class="res-row"><b>Lý do:</b> ${reason}</div>`:''}`;
+  renderAccessLog();
+}
+function logA(guestName,apt,note,status,reason,pinVerified){
+  DB.accessLog.push({id:'l'+Date.now(),guestName,apt,note,time:Date.now(),status,reason:reason||'',guardName:currentUser?.name||'?',pinVerified});
+  saveDB();
+}
+function renderAccessLog(){
+  const logs=[...DB.accessLog].sort((a,b)=>b.time-a.time).slice(0,20);
+  document.getElementById('access-log-list').innerHTML=logs.length
+    ?`<table><thead><tr><th>Thời gian</th><th>Khách</th><th>Căn hộ</th><th>Bảo vệ</th><th>PIN</th><th>Kết quả</th></tr></thead><tbody>${logs.map(l=>{
+      const ok=l.status==='granted';
+      return `<tr><td>${new Date(l.time).toLocaleString('vi-VN')}</td><td>${l.guestName}</td><td>${l.apt}</td><td>${l.guardName||'—'}</td><td>${l.pinVerified?'✅':'—'}</td><td><badge class="${ok?'badge-green':'badge-red'}">${ok?'✅ Vào':'❌ Từ chối'}</badge>${l.reason?` <span style="font-size:.7rem;color:#888">${l.reason}</span>`:''}</td></tr>`;
+    }).join('')}</tbody></table>`
+    :'<div class="empty-state"><i class="fas fa-list"></i><p>Chưa có lượt quét</p></div>';
+}
+
+// ─── CƯ DÂN ─────────────────────────────────────────────
+function renderResidents(){
+  document.getElementById('resident-table').innerHTML=
+    DB.users.filter(u=>u.role==='resident').sort((a,b)=>a.apt.localeCompare(b.apt))
+    .map(u=>`<tr><td>${u.name}</td><td>${u.apt}</td><td>${u.phone}</td><td><badge class="${u.active!==false?'badge-green':'badge-gray'}">${u.active!==false?'✅ Hoạt động':'⛔ Khoá'}</badge></td></tr>`).join('');
+}
+
+// ─── QUẢN LÝ TÀI KHOẢN ──────────────────────────────────
+let acFilter='all';
+function toggleAptField(){
+  const role=document.getElementById('ac-role').value;
+  const aptEl=document.getElementById('ac-apt');
+  aptEl.disabled=role!=='resident';
+  if(role!=='resident')aptEl.value='';
+}
+function createAccount(){
+  const name=document.getElementById('ac-name').value.trim();
+  const username=document.getElementById('ac-user').value.trim().toLowerCase();
+  const pass=document.getElementById('ac-pass').value;
+  const phone=document.getElementById('ac-phone').value.trim();
+  const role=document.getElementById('ac-role').value;
+  const apt=document.getElementById('ac-apt').value.trim().toUpperCase();
+  const errEl=document.getElementById('ac-err'),okEl=document.getElementById('ac-ok');
+  errEl.style.display='none';okEl.style.display='none';
+  if(!name||!username||!pass||!phone){errEl.textContent='❌ Vui lòng điền đầy đủ thông tin bắt buộc.';errEl.style.display='block';return;}
+  if(pass.length<6){errEl.textContent='❌ Mật khẩu phải ≥ 6 ký tự.';errEl.style.display='block';return;}
+  if(DB.users.find(u=>u.username===username)){errEl.textContent='❌ Tên đăng nhập đã tồn tại.';errEl.style.display='block';return;}
+  if(role==='resident'){
+    if(!apt||!/^[A-Z]\d{3}$/.test(apt)){errEl.textContent='❌ Mã căn hộ không hợp lệ (VD: A101).';errEl.style.display='block';return;}
+    if(DB.users.find(u=>u.apt===apt&&u.role==='resident')){errEl.textContent=`❌ Căn hộ ${apt} đã có người đăng ký.`;errEl.style.display='block';return;}
+  }
+  const rl={guard:'Bảo vệ',manager:'Quản lý',resident:'Cư dân'};
+  DB.users.push({id:'u'+Date.now(),username,password:pass,name,role,apt:role==='resident'?apt:'',phone,active:true});
+  saveDB();
+  okEl.textContent=`✅ Đã tạo tài khoản ${rl[role]} "${name}" thành công!`;
+  okEl.style.display='block';
+  ['ac-name','ac-user','ac-pass','ac-phone','ac-apt'].forEach(id=>document.getElementById(id).value='');
+  renderAccountList(acFilter);
+}
+function toggleAccount(id){
+  const u=DB.users.find(x=>x.id===id);
+  if(!u)return;
+  if(u.username===currentUser.username){alert('Không thể khoá chính tài khoản đang đăng nhập!');return;}
+  u.active=u.active===false?true:false;
+  saveDB();renderAccountList(acFilter);
+}
+function filterAccounts(role){acFilter=role;renderAccountList(role);}
+function renderAccountList(role){
+  const roleIcon={guard:'👮',manager:'📋',resident:'🏠'};
+  const roleLbl={guard:'Bảo vệ',manager:'Quản lý',resident:'Cư dân'};
+  const roleBadge={guard:'badge-orange',manager:'badge-blue',resident:'badge-green'};
+  let list=[...DB.users];
+  if(role&&role!=='all')list=list.filter(u=>u.role===role);
+  list.sort((a,b)=>{
+    const o={manager:0,guard:1,resident:2};return(o[a.role]??3)-(o[b.role]??3)||(a.name.localeCompare(b.name));
+  });
+  document.getElementById('account-list').innerHTML=list.length
+    ?`<table><thead><tr><th>Họ tên</th><th>Tên đăng nhập</th><th>Vai trò</th><th>Căn hộ</th><th>SĐT</th><th>Trạng thái</th><th></th></tr></thead><tbody>${list.map(u=>{
+      const active=u.active!==false,isMe=u.username===currentUser.username;
+      return `<tr class="${active?'':' locked-row'}">
+        <td>${u.name}${isMe?' <badge class="badge-blue">Bạn</badge>':''}</td>
+        <td><code class="uname">${u.username}</code></td>
+        <td><badge class="${roleBadge[u.role]||'badge-gray'}">${roleIcon[u.role]||''} ${roleLbl[u.role]||u.role}</badge></td>
+        <td>${u.apt||'—'}</td>
+        <td>${u.phone||'—'}</td>
+        <td><badge class="${active?'badge-green':'badge-gray'}">${active?'✅ Hoạt động':'⛔ Khoá'}</badge></td>
+        <td>${!isMe?`<button class="btn btn-sm" style="background:${active?'#ffebee':'#e8f5e9'};color:${active?'#c62828':'#2e7d32'}" onclick="toggleAccount('${u.id}')">
+          <i class="fas ${active?'fa-lock':'fa-unlock'}"></i> ${active?'Khoá':'Mở'}</button>`:''}</td>
+      </tr>`;
+    }).join('')}</tbody></table>`
+    :'<div class="empty-state"><i class="fas fa-users"></i><p>Không có tài khoản nào</p></div>';
+}
+
+// ─── THÔNG BÁO ───────────────────────────────────────────
+function notifyOwner(apt,guestName,note,time,pinVerified){
+  if(!DB.notifications.personal)DB.notifications.personal={};
+  const owner=DB.users.find(u=>u.apt===apt&&u.role==='resident');if(!owner)return;
+  if(!DB.notifications.personal[owner.id])DB.notifications.personal[owner.id]=[];
+  DB.notifications.personal[owner.id].unshift({id:'pn'+Date.now(),title:'🔔 Khách đã vào tòa nhà',body:`Khách <b>${guestName}</b> được bảo vệ <b>${currentUser.name}</b> cho phép vào căn hộ ${apt}${note?' — '+note:''} lúc ${new Date(time).toLocaleString('vi-VN')}.${pinVerified?' ✅ Đã xác minh PIN.':''}`,time,read:false});
+  saveDB();
+}
+function getMyNotifs(){
+  const g=DB.notifications.global||[];
+  const p=(DB.notifications.personal||{})[currentUser.id]||[];
+  return[...p,...g].sort((a,b)=>(typeof b.time==='number'?b.time:0)-(typeof a.time==='number'?a.time:0));
+}
+function updateNotifBadge(){
+  if(!currentUser)return;
+  const cnt=getMyNotifs().filter(n=>!n.read).length;
+  const el=document.getElementById('notif-cnt');
+  if(el){el.textContent=cnt;el.style.display=cnt?'inline-flex':'none';}
+}
+function renderNotifications(){
+  const list=getMyNotifs();
+  document.getElementById('notif-list').innerHTML=list.length?list.map(n=>{
+    const ts=typeof n.time==='number'?new Date(n.time).toLocaleString('vi-VN'):n.time;
+    const isP=!!(DB.notifications.personal||{})[currentUser.id]?.find(x=>x.id===n.id);
+    return `<div style="padding:13px;border-bottom:1px solid #f0f0f0;cursor:pointer;background:${isP?'#fffde7':'#fff'}" onclick="markRead('${n.id}','${isP?'p':'g'}')">
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <div><strong style="color:#1a237e">${n.title}</strong>${isP?' <badge class="badge-green" style="font-size:.68rem">🔔 Cá nhân</badge>':''}</div>
+        ${!n.read?'<badge class="badge-green" style="flex-shrink:0">Mới</badge>':''}
+      </div>
+      <div style="font-size:.8rem;color:#555;margin-top:5px;line-height:1.5">${n.body}</div>
+      <div style="font-size:.73rem;color:#bbb;margin-top:4px">${ts}</div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><i class="fas fa-bell-slash"></i><p>Không có thông báo</p></div>';
+  updateNotifBadge();
+}
+function markRead(id,bucket){
+  if(bucket==='p'){const arr=(DB.notifications.personal||{})[currentUser.id]||[];const n=arr.find(x=>x.id===id);if(n)n.read=true;}
+  else{const n=(DB.notifications.global||[]).find(x=>x.id===id);if(n)n.read=true;}
+  saveDB();renderNotifications();
+}
+
+// ─── TOAST ───────────────────────────────────────────────
+function showToast(title,body,dur=5000){
+  const old=document.getElementById('_toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='toast';t.id='_toast';
+  t.innerHTML=`<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  t.onclick=()=>{t.style.animation='slideOut .3s ease forwards';setTimeout(()=>t.remove(),300);showSection('notif');};
+  document.body.appendChild(t);
+  setTimeout(()=>{if(document.getElementById('_toast')===t){t.style.animation='slideOut .3s ease forwards';setTimeout(()=>t.remove(),300);}},dur);
+}
+function showNewNotifToast(){
+  if(!currentUser)return;
+  const p=(DB.notifications.personal||{})[currentUser.id]||[];
+  const unread=p.filter(n=>!n.read);if(!unread.length)return;
+  const latest=unread[0];
+  showToast(`🔔 ${unread.length>1?unread.length+' thông báo mới':latest.title}`,
+    unread.length>1?`Bạn có ${unread.length} thông báo chưa đọc. Nhấn để xem.`:latest.body.replace(/<b>|<\/b>/g,''),6000);
+}
+
+// ─── BOOT ────────────────────────────────────────────────
+loadDB();
+restoreSession();
+</script>
+</body>
+</html>
